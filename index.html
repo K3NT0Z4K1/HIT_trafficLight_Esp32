@@ -9,8 +9,17 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    :root {
+      --red:    #ef4444;
+      --yellow: #f59e0b;
+      --green:  #22c55e;
+      --bg:     #030712;
+      --panel:  #0d1117;
+      --border: #1f2937;
+    }
+
     body {
-      background: #030712;
+      background: var(--bg);
       color: #e5e7eb;
       font-family: 'Rajdhani', sans-serif;
       min-height: 100vh;
@@ -19,44 +28,32 @@
       overflow: hidden;
     }
 
-    /* HEADER */
+    /* ── HEADER ── */
     header {
-      display: flex;
-      align-items: center;
-      gap: 14px;
+      display: flex; align-items: center; gap: 14px;
       padding: 10px 22px;
-      background: #0d1117;
-      border-bottom: 1px solid #1f2937;
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
     .logo { font-size: 1.35rem; font-weight: 700; }
     .header-title {
-      flex: 1;
-      font-size: 0.88rem;
-      font-weight: 500;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+      flex: 1; font-size: 0.88rem; font-weight: 500;
+      color: #6b7280; text-transform: uppercase; letter-spacing: 0.08em;
     }
     .badge {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 4px 13px;
-      border-radius: 999px;
-      font-size: 0.72rem;
-      font-weight: 600;
+      display: flex; align-items: center; gap: 7px;
+      padding: 4px 13px; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 600;
       letter-spacing: 0.12em;
       font-family: 'JetBrains Mono', monospace;
-      border: 1px solid;
-      transition: all 0.3s;
+      border: 1px solid; transition: all 0.3s;
     }
-    .badge.live    { background:rgba(34,197,94,0.1);  color:#22c55e; border-color:rgba(34,197,94,0.3); }
-    .badge.offline { background:rgba(239,68,68,0.1);  color:#ef4444; border-color:rgba(239,68,68,0.3); }
+    .badge.live       { background:rgba(34,197,94,0.1);  color:#22c55e; border-color:rgba(34,197,94,0.3); }
+    .badge.offline    { background:rgba(239,68,68,0.1);  color:#ef4444; border-color:rgba(239,68,68,0.3); }
     .badge.connecting { background:rgba(251,191,36,0.1); color:#fbbf24; border-color:rgba(251,191,36,0.3); }
     .pulse-dot {
-      width:7px; height:7px;
-      border-radius:50%;
+      width:7px; height:7px; border-radius:50%;
       background:currentColor;
       animation: pulse 1.6s ease-in-out infinite;
     }
@@ -65,39 +62,72 @@
       50%      { opacity:0.3; transform:scale(0.8); }
     }
 
-    /* CONTENT */
-    .content {
-      display: flex;
-      flex: 1;
+    /* ── SPLASH ── */
+    #splash {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(3,7,18,0.97);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       gap: 18px;
-      padding: 18px;
-      overflow: hidden;
+      backdrop-filter: blur(4px);
+    }
+    #splash h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: 0.08em; }
+    #splash p  { color: #6b7280; font-size: 1rem; text-align: center; max-width: 360px; line-height: 1.7; }
+    #start-btn {
+      margin-top: 6px; padding: 14px 44px;
+      background: #22c55e; color: #030712;
+      border: none; border-radius: 10px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.2rem; font-weight: 700;
+      letter-spacing: 0.12em; cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    #start-btn:hover  { background: #16a34a; }
+    #start-btn:active { transform: scale(0.97); }
+    #start-btn:disabled { background: #374151; color: #6b7280; cursor: not-allowed; }
+    #splash-status {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; color: #4b5563;
+      min-height: 1.4em; text-align: center;
+      max-width: 360px;
+    }
+    #splash-status.err { color: #ef4444; }
+
+    /* ── DEBUG BAR ── */
+    #debug-bar {
+      background: #060b14;
+      border-top: 1px solid var(--border);
+      padding: 5px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; color: #4b5563;
+      flex-shrink: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    #debug-bar .ts { color: #374151; margin-right: 6px; }
+
+    /* ── CONTENT ── */
+    .content {
+      display: flex; flex: 1; gap: 18px;
+      padding: 18px; overflow: hidden;
       align-items: flex-start;
     }
     canvas {
       border-radius: 12px;
-      box-shadow: 0 0 0 1px #1f2937, 0 8px 40px rgba(0,0,0,0.6);
-      flex-shrink: 0;
-      display: block;
+      box-shadow: 0 0 0 1px var(--border), 0 8px 40px rgba(0,0,0,0.6);
+      flex-shrink: 0; display: block;
     }
 
-    /* PANEL */
+    /* ── PANEL ── */
     .panel {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 11px;
-      overflow-y: auto;
-      max-width: 270px;
+      flex: 1; display: flex; flex-direction: column;
+      gap: 11px; overflow-y: auto; max-width: 270px;
     }
     .panel::-webkit-scrollbar { width:4px; }
     .panel::-webkit-scrollbar-thumb { background:#374151; border-radius:2px; }
 
     .light-card {
-      border-radius: 12px;
-      border: 2px solid;
-      padding: 18px 14px 14px;
-      text-align: center;
+      border-radius: 12px; border: 2px solid;
+      padding: 18px 14px 14px; text-align: center;
       transition: background 0.4s, border-color 0.4s;
     }
     .light-emoji { font-size:2.2rem; line-height:1; margin-bottom:2px; }
@@ -106,72 +136,47 @@
 
     .info-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
     .info-box {
-      background:#0d1117;
-      border:1px solid #1f2937;
-      border-radius:10px;
-      padding:11px;
-      text-align:center;
+      background: var(--panel); border:1px solid var(--border);
+      border-radius:10px; padding:11px; text-align:center;
     }
     .info-label { font-size:0.68rem; color:#6b7280; text-transform:uppercase; letter-spacing:0.09em; margin-bottom:3px; }
     .info-val   { font-size:1.6rem; font-weight:700; font-family:'JetBrains Mono',monospace; line-height:1.1; }
-    .unit       { font-size:0.95rem; color:#6b7280; margin-left:1px; font-weight:400; }
 
     /* Countdown ring */
     .countdown-box {
-      background:#0d1117;
-      border:1px solid #1f2937;
-      border-radius:10px;
-      padding:14px;
-      text-align:center;
+      background: var(--panel); border:1px solid var(--border);
+      border-radius:10px; padding:14px; text-align:center;
     }
     .countdown-ring-wrap {
-      position: relative;
-      display: inline-block;
-      width: 80px;
-      height: 80px;
-      margin: 6px auto 0;
+      position:relative; display:inline-block;
+      width:80px; height:80px; margin:6px auto 0;
     }
-    .countdown-ring-wrap svg {
-      transform: rotate(-90deg);
-    }
-    .ring-bg { fill: none; stroke: #1f2937; stroke-width: 6; }
-    .ring-fg {
-      fill: none;
-      stroke-width: 6;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 1s linear, stroke 0.4s;
-    }
+    .countdown-ring-wrap svg { transform: rotate(-90deg); }
+    .ring-bg { fill:none; stroke:#1f2937; stroke-width:6; }
+    .ring-fg { fill:none; stroke-width:6; stroke-linecap:round; transition: stroke-dashoffset 1s linear, stroke 0.4s; }
     .ring-label {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 1.35rem;
-      font-weight: 700;
-      line-height: 1;
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      font-family:'JetBrains Mono',monospace;
+      font-size:1.35rem; font-weight:700; line-height:1;
     }
 
     .update-box {
-      background:#0d1117;
-      border:1px solid #1f2937;
-      border-radius:10px;
-      padding:11px;
+      background: var(--panel); border:1px solid var(--border);
+      border-radius:10px; padding:11px;
     }
     .update-val { font-family:'JetBrains Mono',monospace; font-size:0.73rem; color:#9ca3af; margin-top:4px; word-break:break-all; }
 
     .section-box {
-      background:#0d1117;
-      border:1px solid #1f2937;
-      border-radius:10px;
-      padding:13px;
+      background: var(--panel); border:1px solid var(--border);
+      border-radius:10px; padding:13px;
     }
     .section-title { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; color:#4b5563; margin-bottom:9px; font-weight:600; }
 
     .log-empty { font-size:0.78rem; color:#374151; text-align:center; padding:6px 0; font-style:italic; }
     .log-entry {
       display:flex; align-items:center; gap:7px;
-      padding:5px 0;
-      font-size:0.78rem;
+      padding:5px 0; font-size:0.78rem;
       font-family:'JetBrains Mono',monospace;
       border-bottom:1px solid #111827;
     }
@@ -182,12 +187,7 @@
     .log-entry.yellow .log-state { color:#f59e0b; }
     .log-entry.green  .log-state { color:#22c55e; }
 
-    .dot {
-      width:8px; height:8px;
-      border-radius:50%;
-      display:inline-block;
-      flex-shrink:0;
-    }
+    .dot { width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0; }
     .dot.red    { background:#ef4444; box-shadow:0 0 6px #ef4444aa; }
     .dot.yellow { background:#f59e0b; box-shadow:0 0 6px #f59e0baa; }
     .dot.green  { background:#22c55e; box-shadow:0 0 6px #22c55eaa; }
@@ -204,27 +204,40 @@
 </head>
 <body>
 
+<!-- ════ SPLASH SCREEN ════ -->
+<div id="splash">
+  <div style="font-size:3.5rem">🚦</div>
+  <h1>TrafficSim</h1>
+  <p>
+    Make sure your <strong>ESP32 is powered on</strong> and connected to WiFi.<br/>
+    Press <strong>Start</strong> to sync with Firebase and begin the live simulation.
+  </p>
+  <button id="start-btn" onclick="startSim()">▶ &nbsp;START SIMULATION</button>
+  <div id="splash-status">Ready to connect…</div>
+</div>
+
+<!-- ════ HEADER ════ -->
 <header>
   <span class="logo">🚦 TrafficSim</span>
   <span class="header-title">ESP32 Traffic Light Monitor</span>
   <span class="badge connecting" id="badge">
     <span class="pulse-dot"></span>
-    <span id="badge-text">CONNECTING...</span>
+    <span id="badge-text">NOT CONNECTED</span>
   </span>
 </header>
 
+<!-- ════ MAIN ════ -->
 <div class="content">
-  <canvas id="sim" width="560" height="560"></canvas>
+  <canvas id="sim" width="560" height="520"></canvas>
 
   <div class="panel">
-    <!-- Light state card -->
+
     <div class="light-card" id="light-card" style="background:#0d1117; border-color:#374151;">
       <div class="light-emoji" id="light-emoji">⏳</div>
       <div class="light-label" id="light-label" style="color:#6b7280;">WAITING</div>
       <div class="light-sub">North ↕ South</div>
     </div>
 
-    <!-- Countdown ring + direction -->
     <div class="info-row">
       <div class="countdown-box">
         <div class="info-label">Time Left</div>
@@ -232,11 +245,9 @@
           <svg width="80" height="80" viewBox="0 0 80 80">
             <circle class="ring-bg" cx="40" cy="40" r="34"/>
             <circle class="ring-fg" id="ring-fg" cx="40" cy="40" r="34"
-              stroke="#ef4444"
-              stroke-dasharray="213.6"
-              stroke-dashoffset="0"/>
+              stroke="#6b7280" stroke-dasharray="213.6" stroke-dashoffset="0"/>
           </svg>
-          <div class="ring-label" id="ring-label" style="color:#ef4444;">--</div>
+          <div class="ring-label" id="ring-label" style="color:#6b7280;">--</div>
         </div>
       </div>
       <div class="info-box" style="display:flex;flex-direction:column;justify-content:center;">
@@ -246,39 +257,40 @@
       </div>
     </div>
 
-    <!-- Last Firebase update -->
     <div class="update-box">
       <div class="info-label">Last Firebase Update</div>
-      <div class="update-val" id="updated-at">Connecting to Firebase...</div>
+      <div class="update-val" id="updated-at">Not connected yet</div>
     </div>
 
-    <!-- Change log -->
     <div class="section-box">
       <div class="section-title">Change Log</div>
       <div id="log-list">
-        <div class="log-empty">Waiting for light changes...</div>
+        <div class="log-empty">Waiting for light changes…</div>
       </div>
     </div>
 
-    <!-- Legend -->
     <div class="section-box">
       <div class="section-title">Legend</div>
       <div class="legend-item"><span class="dot red"></span> Red — Cars stop (30s)</div>
       <div class="legend-item"><span class="dot green"></span> Green — Cars move (25s)</div>
       <div class="legend-item"><span class="dot yellow"></span> Yellow — Slow down (5s)</div>
     </div>
+
   </div>
 </div>
+
+<!-- ════ DEBUG BAR ════ -->
+<div id="debug-bar"><span class="ts">--:--:--</span> Waiting to start…</div>
 
 <!-- Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
-/* ============================================================
-   FIREBASE INIT
-============================================================ */
-const firebaseConfig = {
+/* ══════════════════════════════════════════
+   FIREBASE CONFIG
+══════════════════════════════════════════ */
+const FB_CONFIG = {
   apiKey:            "AIzaSyC6r5kNnapVhrzPQ-vA_Xm6pZRm6HQ3N7U",
   authDomain:        "traffic-sim-5a9ef.firebaseapp.com",
   databaseURL:       "https://traffic-sim-5a9ef-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -288,315 +300,122 @@ const firebaseConfig = {
   appId:             "1:511074874213:web:a6b727744263d6b9be278c"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db       = firebase.database();
-const lightRef = db.ref('traffic_light/status');
-
-/* ============================================================
+/* ══════════════════════════════════════════
    CANVAS CONSTANTS
-============================================================ */
-const W = 560, H = 560;
-const CX = W/2, CY = H/2;
-const ROAD_HALF  = 52;
-const LANE_W     = 52;
-const SIDEWALK   = 10;
+══════════════════════════════════════════ */
+const W=560, H=520, CX=W/2, CY=H/2;
+const ROAD_HALF=52, LANE_W=52, SIDEWALK=10;
 const SOUTH_STOP = CY - ROAD_HALF;
 const NORTH_STOP = CY + ROAD_HALF;
-const CAR_W = 22, CAR_H = 38, CAR_GAP = 8;
-const CAR_COLORS = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c','#e67e22'];
+const CAR_W=22, CAR_H=38, CAR_GAP=8;
+const CAR_COLORS=['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c','#e67e22'];
+const CIRCUMFERENCE = 2 * Math.PI * 34;
 
-let currentLight = 'red';
-let logEntries   = [];
+const canvas = document.getElementById('sim');
+const ctx    = canvas.getContext('2d');
 
-/* ============================================================
-   COUNTDOWN — CLIENT-SIDE TICKER
-   FIX: ESP32 only sends total duration once per phase.
-   We store it and count down locally every second.
-============================================================ */
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let currentLight      = 'red';
+let logEntries        = [];
 let countdownInterval = null;
 let timeLeft          = 0;
-let totalDuration     = 30; // used for ring % calculation
+let totalDuration     = 30;
+let simStarted        = false;
 
-const CIRCUMFERENCE = 2 * Math.PI * 34; // r=34 matches SVG
-
-function startCountdown(duration) {
-  clearInterval(countdownInterval);
-  timeLeft      = duration;
-  totalDuration = duration;
-  updateRing();
-
-  countdownInterval = setInterval(() => {
-    if (timeLeft > 0) {
-      timeLeft--;
-      updateRing();
-    } else {
-      clearInterval(countdownInterval);
-    }
-  }, 1000);
-}
-
-function updateRing() {
-  const pct    = totalDuration > 0 ? timeLeft / totalDuration : 0;
-  const offset = CIRCUMFERENCE * (1 - pct);
-  const ring   = document.getElementById('ring-fg');
-  const label  = document.getElementById('ring-label');
-  const li     = lightInfo[currentLight] || lightInfo.red;
-
-  ring.style.strokeDashoffset = offset;
-  ring.style.stroke           = li.color;
-  label.textContent           = timeLeft > 0 ? timeLeft : '--';
-  label.style.color           = li.color;
-}
-
-/* ============================================================
-   CAR CLASS
-============================================================ */
-class Car {
-  constructor(direction, index) {
-    this.direction = direction;
-    this.color     = CAR_COLORS[index % CAR_COLORS.length];
-    this.speed     = 1.6 + index * 0.12;
-    this.stopped   = false;
-    if (direction === 'south') {
-      this.x = CX - LANE_W * 0.5;
-      this.y = -50 - index * 175;
-    } else {
-      this.x = CX + LANE_W * 0.5;
-      this.y = H + 50 + index * 175;
-    }
-  }
-
-  update(light, frontEdgeY) {
-    const shouldStop = light === 'red' || light === 'yellow';
-    if (this.direction === 'south') {
-      if (this.y > SOUTH_STOP + 20) {
-        this.stopped = false; this.y += this.speed;
-        if (this.y > H+70) this.y = -70; return;
-      }
-      let stopAt = SOUTH_STOP - CAR_H/2 - 3;
-      if (frontEdgeY !== null) stopAt = Math.min(stopAt, frontEdgeY - CAR_H - CAR_GAP);
-      if (shouldStop && this.y >= stopAt) { this.y = stopAt; this.stopped = true; }
-      else { this.stopped = false; this.y += this.speed; if (this.y > H+70) this.y = -70; }
-    } else {
-      if (this.y < NORTH_STOP - 20) {
-        this.stopped = false; this.y -= this.speed;
-        if (this.y < -70) this.y = H+70; return;
-      }
-      let stopAt = NORTH_STOP + CAR_H/2 + 3;
-      if (frontEdgeY !== null) stopAt = Math.max(stopAt, frontEdgeY + CAR_H + CAR_GAP);
-      if (shouldStop && this.y <= stopAt) { this.y = stopAt; this.stopped = true; }
-      else { this.stopped = false; this.y -= this.speed; if (this.y < -70) this.y = H+70; }
-    }
-  }
-
-  draw(ctx) {
-    const x = this.x - CAR_W/2, y = this.y - CAR_H/2;
-    ctx.save(); ctx.globalAlpha = 0.35; ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.ellipse(this.x+2, this.y+5, CAR_W*0.44, CAR_H*0.18, 0, 0, Math.PI*2); ctx.fill();
-    ctx.restore();
-    ctx.fillStyle = this.color; ctx.beginPath(); ctx.roundRect(x, y, CAR_W, CAR_H, 5); ctx.fill();
-    ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.beginPath(); ctx.roundRect(x+3, y+9, CAR_W-6, CAR_H-18, 3); ctx.fill();
-    ctx.fillStyle = 'rgba(173,216,255,0.9)';
-    if (this.direction==='south') ctx.fillRect(x+3, y+4, CAR_W-6, 8);
-    else ctx.fillRect(x+3, y+CAR_H-12, CAR_W-6, 8);
-    ctx.fillStyle = 'rgba(173,216,255,0.55)';
-    if (this.direction==='south') ctx.fillRect(x+3, y+CAR_H-11, CAR_W-6, 6);
-    else ctx.fillRect(x+3, y+6, CAR_W-6, 6);
-    ctx.fillStyle = '#fffde7';
-    if (this.direction==='south') { ctx.fillRect(x+2,y,4,3); ctx.fillRect(x+CAR_W-6,y,4,3); }
-    else { ctx.fillRect(x+2,y+CAR_H-3,4,3); ctx.fillRect(x+CAR_W-6,y+CAR_H-3,4,3); }
-    ctx.fillStyle = this.stopped ? '#ff1a1a' : '#7f0000';
-    if (this.direction==='south') { ctx.fillRect(x+2,y+CAR_H-3,4,3); ctx.fillRect(x+CAR_W-6,y+CAR_H-3,4,3); }
-    else { ctx.fillRect(x+2,y,4,3); ctx.fillRect(x+CAR_W-6,y,4,3); }
-  }
-}
-
-/* ============================================================
-   SCENE DRAWING
-============================================================ */
-function drawBuildingBlock(ctx, bx, by, bw, bh) {
-  if (bw<=0||bh<=0) return;
-  const buildings=[
-    {rx:0.05,ry:0.05,rw:0.42,rh:0.55,c:'#1a2744'},
-    {rx:0.52,ry:0.05,rw:0.43,rh:0.35,c:'#0f1e35'},
-    {rx:0.05,ry:0.65,rw:0.30,rh:0.30,c:'#162038'},
-    {rx:0.40,ry:0.45,rw:0.55,rh:0.50,c:'#0d1a2e'},
-  ];
-  buildings.forEach(b => {
-    const x=bx+bw*b.rx, y=by+bh*b.ry, w=bw*b.rw, h=bh*b.rh;
-    if (w<5||h<5) return;
-    ctx.fillStyle=b.c; ctx.fillRect(x,y,w,h);
-    ctx.strokeStyle='#1f2d3d'; ctx.lineWidth=1; ctx.strokeRect(x,y,w,h);
-    ctx.fillStyle='rgba(255,240,150,0.3)';
-    for (let wy=y+6; wy<y+h-8; wy+=14)
-      for (let wx=x+6; wx<x+w-6; wx+=12)
-        if ((Math.floor((wy-y)/14)+Math.floor((wx-x)/12))%3!==0)
-          ctx.fillRect(wx, wy, 7, 8);
-  });
-}
-
-function drawArrow(ctx, x, y, dir) {
-  ctx.fillStyle='rgba(255,255,255,0.28)'; ctx.beginPath();
-  if (dir==='south') {
-    ctx.moveTo(x,y+14); ctx.lineTo(x+7,y+4); ctx.lineTo(x+3,y+4);
-    ctx.lineTo(x+3,y-10); ctx.lineTo(x-3,y-10); ctx.lineTo(x-3,y+4); ctx.lineTo(x-7,y+4);
-  } else {
-    ctx.moveTo(x,y-14); ctx.lineTo(x+7,y-4); ctx.lineTo(x+3,y-4);
-    ctx.lineTo(x+3,y+10); ctx.lineTo(x-3,y+10); ctx.lineTo(x-3,y-4); ctx.lineTo(x-7,y-4);
-  }
-  ctx.closePath(); ctx.fill();
-}
-
-function drawLightHousing(ctx, hx, hy, hw, hh, light) {
-  ctx.fillStyle='#1f2937'; ctx.beginPath(); ctx.roundRect(hx,hy,hw,hh,5); ctx.fill();
-  ctx.strokeStyle='#374151'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.roundRect(hx,hy,hw,hh,5); ctx.stroke();
-  const defs=[
-    {state:'red',    on:'#ef4444', off:'#450a0a'},
-    {state:'yellow', on:'#f59e0b', off:'#3d2900'},
-    {state:'green',  on:'#22c55e', off:'#052e16'},
-  ];
-  defs.forEach(({state, on, off}, i) => {
-    const lx=hx+hw/2, ly=hy+14+i*24, r=9, active=(light===state);
-    if (active) {
-      const g=ctx.createRadialGradient(lx,ly,0,lx,ly,22);
-      g.addColorStop(0, on+'aa'); g.addColorStop(1,'transparent');
-      ctx.fillStyle=g; ctx.fillRect(lx-22,ly-22,44,44);
-    }
-    ctx.beginPath(); ctx.arc(lx,ly,r,0,Math.PI*2);
-    ctx.fillStyle=active?on:off; ctx.fill();
-    if (active) {
-      ctx.beginPath(); ctx.arc(lx-3,ly-3,3,0,Math.PI*2);
-      ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.fill();
-    }
-  });
-}
-
-function drawTrafficLight(ctx, x, y, light, position) {
-  const isNW=position==='NW', hw=27, hh=75;
-  ctx.fillStyle='#6b7280';
-  if (isNW) {
-    ctx.fillRect(x-4,y,8,42); ctx.fillRect(x-4,y,hw/2+8,6);
-    drawLightHousing(ctx, x+4, y-hh, hw, hh, light);
-  } else {
-    ctx.fillRect(x-4,y-42,8,42); ctx.fillRect(x-hw/2-8,y-6,hw/2+8,6);
-    drawLightHousing(ctx, x-4-hw, y-hh, hw, hh, light);
-  }
-}
-
-function drawScene(ctx, light) {
-  const blockW=CX-ROAD_HALF-SIDEWALK, blockH=CY-ROAD_HALF-SIDEWALK;
-  ctx.fillStyle='#111827';
-  ctx.fillRect(0,0,blockW,blockH);
-  ctx.fillRect(CX+ROAD_HALF+SIDEWALK,0,W-CX-ROAD_HALF-SIDEWALK,blockH);
-  ctx.fillRect(0,CY+ROAD_HALF+SIDEWALK,blockW,H-CY-ROAD_HALF-SIDEWALK);
-  ctx.fillRect(CX+ROAD_HALF+SIDEWALK,CY+ROAD_HALF+SIDEWALK,W-CX-ROAD_HALF-SIDEWALK,H-CY-ROAD_HALF-SIDEWALK);
-  drawBuildingBlock(ctx,0,0,blockW,blockH);
-  drawBuildingBlock(ctx,CX+ROAD_HALF+SIDEWALK,0,W-CX-ROAD_HALF-SIDEWALK,blockH);
-  drawBuildingBlock(ctx,0,CY+ROAD_HALF+SIDEWALK,blockW,H-CY-ROAD_HALF-SIDEWALK);
-  drawBuildingBlock(ctx,CX+ROAD_HALF+SIDEWALK,CY+ROAD_HALF+SIDEWALK,W-CX-ROAD_HALF-SIDEWALK,H-CY-ROAD_HALF-SIDEWALK);
-  ctx.fillStyle='#9ca3af';
-  ctx.fillRect(CX-ROAD_HALF-SIDEWALK,0,SIDEWALK,CY-ROAD_HALF);
-  ctx.fillRect(CX+ROAD_HALF,0,SIDEWALK,CY-ROAD_HALF);
-  ctx.fillRect(CX-ROAD_HALF-SIDEWALK,CY+ROAD_HALF,SIDEWALK,H-CY-ROAD_HALF);
-  ctx.fillRect(CX+ROAD_HALF,CY+ROAD_HALF,SIDEWALK,H-CY-ROAD_HALF);
-  ctx.fillRect(0,CY-ROAD_HALF-SIDEWALK,CX-ROAD_HALF,SIDEWALK);
-  ctx.fillRect(CX+ROAD_HALF,CY-ROAD_HALF-SIDEWALK,W-CX-ROAD_HALF,SIDEWALK);
-  ctx.fillRect(0,CY+ROAD_HALF,CX-ROAD_HALF,SIDEWALK);
-  ctx.fillRect(CX+ROAD_HALF,CY+ROAD_HALF,W-CX-ROAD_HALF,SIDEWALK);
-  ctx.fillStyle='#374151';
-  ctx.fillRect(CX-ROAD_HALF,0,ROAD_HALF*2,H);
-  ctx.fillRect(0,CY-ROAD_HALF,W,ROAD_HALF*2);
-  ctx.fillStyle='#3d4a5c';
-  ctx.fillRect(CX-ROAD_HALF,CY-ROAD_HALF,ROAD_HALF*2,ROAD_HALF*2);
-  ctx.fillStyle='#d1d5db';
-  for (let i=0;i<4;i++) {
-    const s=9,g=6;
-    ctx.fillRect(CX-ROAD_HALF+5+i*(s+g),CY-ROAD_HALF-15,s,15);
-    ctx.fillRect(CX-ROAD_HALF+5+i*(s+g),CY+ROAD_HALF,s,15);
-    ctx.fillRect(CX-ROAD_HALF-15,CY-ROAD_HALF+5+i*(s+g),15,s);
-    ctx.fillRect(CX+ROAD_HALF,CY-ROAD_HALF+5+i*(s+g),15,s);
-  }
-  ctx.strokeStyle='#fbbf24'; ctx.lineWidth=2; ctx.setLineDash([22,16]);
-  ctx.beginPath();
-  ctx.moveTo(CX,0); ctx.lineTo(CX,CY-ROAD_HALF);
-  ctx.moveTo(CX,CY+ROAD_HALF); ctx.lineTo(CX,H);
-  ctx.moveTo(0,CY); ctx.lineTo(CX-ROAD_HALF,CY);
-  ctx.moveTo(CX+ROAD_HALF,CY); ctx.lineTo(W,CY);
-  ctx.stroke(); ctx.setLineDash([]);
-  ctx.strokeStyle='#ffffff'; ctx.lineWidth=3;
-  ctx.beginPath();
-  ctx.moveTo(CX-ROAD_HALF+2,SOUTH_STOP); ctx.lineTo(CX-2,SOUTH_STOP);
-  ctx.moveTo(CX+2,NORTH_STOP); ctx.lineTo(CX+ROAD_HALF-2,NORTH_STOP);
-  ctx.stroke();
-  drawArrow(ctx, CX-LANE_W*0.5, CY-ROAD_HALF-60, 'south');
-  drawArrow(ctx, CX+LANE_W*0.5, CY+ROAD_HALF+60, 'north');
-  drawTrafficLight(ctx, CX-ROAD_HALF-8, CY-ROAD_HALF, light, 'NW');
-  drawTrafficLight(ctx, CX+ROAD_HALF+8, CY+ROAD_HALF, light, 'SE');
-}
-
-/* ============================================================
-   CARS + ANIMATION
-============================================================ */
-const southCars=[new Car('south',0),new Car('south',1),new Car('south',2)];
-const northCars=[new Car('north',0),new Car('north',1),new Car('north',2)];
-const canvas=document.getElementById('sim');
-const ctx=canvas.getContext('2d');
-
-function animate() {
-  ctx.clearRect(0,0,W,H);
-  drawScene(ctx, currentLight);
-  const south=[...southCars].sort((a,b)=>b.y-a.y);
-  south.forEach((car,i)=>car.update(currentLight, i>0?south[i-1].y-CAR_H/2:null));
-  const north=[...northCars].sort((a,b)=>a.y-b.y);
-  north.forEach((car,i)=>car.update(currentLight, i>0?north[i-1].y+CAR_H/2:null));
-  [...south,...north].forEach(car=>car.draw(ctx));
-  requestAnimationFrame(animate);
-}
-animate();
-
-/* ============================================================
-   UI HELPERS
-============================================================ */
-const lightInfo = {
+const LIGHT_INFO = {
   red:    { emoji:'🔴', label:'RED',    color:'#ef4444', bg:'#1a0505' },
   yellow: { emoji:'🟡', label:'YELLOW', color:'#f59e0b', bg:'#1a1005' },
   green:  { emoji:'🟢', label:'GREEN',  color:'#22c55e', bg:'#051a0d' },
 };
 
-function updateUI(data) {
-  const light = (data.north_south || 'red').toLowerCase();
-  const li    = lightInfo[light] || lightInfo.red;
+/* ══════════════════════════════════════════
+   DEBUG
+══════════════════════════════════════════ */
+function dbg(msg, isErr=false) {
+  const ts = new Date().toLocaleTimeString();
+  console[isErr?'error':'log'](`[TrafficSim ${ts}]`, msg);
+  document.getElementById('debug-bar').innerHTML =
+    `<span class="ts">${ts}</span>${isErr?'❌ ':''}${msg}`;
+}
 
-  // Update light card
+function splashMsg(msg, isErr=false) {
+  const el = document.getElementById('splash-status');
+  el.textContent  = msg;
+  el.className    = isErr ? 'err' : '';
+}
+
+/* ══════════════════════════════════════════
+   COUNTDOWN (client-side, synced on each
+   Firebase push — no extra writes needed)
+══════════════════════════════════════════ */
+function startCountdown(duration) {
+  clearInterval(countdownInterval);
+  timeLeft      = parseInt(duration) || 0;
+  totalDuration = timeLeft > 0 ? timeLeft : 1;
+  tickRing();
+  countdownInterval = setInterval(() => {
+    if (timeLeft > 0) { timeLeft--; tickRing(); }
+    else clearInterval(countdownInterval);
+  }, 1000);
+}
+
+function tickRing() {
+  const pct    = timeLeft / totalDuration;
+  const offset = CIRCUMFERENCE * (1 - pct);
+  const color  = (LIGHT_INFO[currentLight] || {color:'#6b7280'}).color;
+  const ring   = document.getElementById('ring-fg');
+  const lbl    = document.getElementById('ring-label');
+  ring.style.strokeDashoffset = offset;
+  ring.style.stroke           = color;
+  lbl.textContent             = timeLeft > 0 ? timeLeft : '--';
+  lbl.style.color             = color;
+}
+
+/* ══════════════════════════════════════════
+   APPLY LIGHT — updates UI + canvas state
+══════════════════════════════════════════ */
+function applyLight(rawState, duration, updatedAt) {
+  // normalise — trim whitespace, lowercase
+  const light = String(rawState || '').toLowerCase().trim();
+
+  if (!LIGHT_INFO[light]) {
+    dbg(`Unknown state received: "${rawState}" — ignoring`, true);
+    return;
+  }
+
+  const li = LIGHT_INFO[light];
+  dbg(`State → ${light.toUpperCase()} | ${duration}s | ${updatedAt}`);
+
+  // ── Update card ──
   document.getElementById('light-emoji').textContent       = li.emoji;
   document.getElementById('light-label').textContent       = li.label;
   document.getElementById('light-label').style.color      = li.color;
   document.getElementById('light-card').style.background  = li.bg;
   document.getElementById('light-card').style.borderColor = li.color;
-  document.getElementById('updated-at').textContent       = data.updated_at ?? 'N/A';
+  document.getElementById('updated-at').textContent       = updatedAt || '—';
 
-  // Log change if state changed
+  // ── Log ──
   if (light !== currentLight) {
     logEntries.unshift({ time: new Date().toLocaleTimeString(), state: light });
     if (logEntries.length > 6) logEntries.pop();
     renderLog();
   }
 
-  // FIX: update currentLight BEFORE starting countdown so ring color is correct
+  // ── IMPORTANT: set currentLight BEFORE startCountdown so ring colour is right ──
   currentLight = light;
+  startCountdown(duration);
 
-  // FIX: start client-side countdown from the duration ESP32 sent
-  startCountdown(data.duration ?? 0);
-
-  // Badge — live
-  document.getElementById('badge').className    = 'badge live';
+  // ── Badge ──
+  document.getElementById('badge').className       = 'badge live';
   document.getElementById('badge-text').textContent = 'LIVE';
 }
 
 function renderLog() {
   const list = document.getElementById('log-list');
-  if (logEntries.length === 0) {
-    list.innerHTML = '<div class="log-empty">Waiting for light changes...</div>';
+  if (!logEntries.length) {
+    list.innerHTML = '<div class="log-empty">Waiting for light changes…</div>';
     return;
   }
   list.innerHTML = logEntries.map(e => `
@@ -604,32 +423,243 @@ function renderLog() {
       <span class="dot ${e.state}"></span>
       <span class="log-time">${e.time}</span>
       <span class="log-state">${e.state.toUpperCase()}</span>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-/* ============================================================
-   FIREBASE REALTIME LISTENER
-   Fires instantly whenever ESP32 updates the DB.
-   No polling needed — Firebase pushes changes to the browser.
-============================================================ */
-lightRef.on('value', (snapshot) => {
-  const data = snapshot.val();
-  if (data && data.north_south) {
-    updateUI(data);
-  } else {
-    // First run — write safe defaults so the page has something to show
-    lightRef.set({
-      north_south: 'red',
-      duration:    30,
-      updated_at:  new Date().toISOString()
-    });
+/* ══════════════════════════════════════════
+   START BUTTON
+══════════════════════════════════════════ */
+function startSim() {
+  const btn = document.getElementById('start-btn');
+  btn.disabled    = true;
+  btn.textContent = '⏳  Connecting…';
+  splashMsg('Initialising Firebase…');
+  dbg('User clicked Start — connecting to Firebase…');
+
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+
+    const db       = firebase.database();
+    const lightRef = db.ref('traffic_light/status');
+
+    splashMsg('Waiting for database…');
+    dbg('Firebase initialised — attaching listener to traffic_light/status');
+
+    lightRef.on('value',
+      (snapshot) => {
+        const data = snapshot.val();
+        dbg(`Raw snapshot: ${JSON.stringify(data)}`);
+
+        // ── Hide splash on FIRST successful read ──
+        if (!simStarted) {
+          simStarted = true;
+          document.getElementById('splash').style.display = 'none';
+          dbg('Splash hidden — simulation running');
+        }
+
+        if (data && data.north_south) {
+          applyLight(data.north_south, data.duration, data.updated_at);
+        } else {
+          // Nothing in DB yet — write default so ESP32 can override it
+          dbg('DB path empty — writing defaults (red / 30s)');
+          lightRef.set({
+            north_south: 'red',
+            duration:    30,
+            updated_at:  new Date().toISOString()
+          })
+          .then(() => dbg('Defaults written — waiting for ESP32…'))
+          .catch(e  => dbg(`Default write failed: ${e.message}`, true));
+        }
+      },
+      (error) => {
+        // ── Firebase rejected the connection ──
+        dbg(`Firebase error: ${error.code} — ${error.message}`, true);
+        document.getElementById('badge').className       = 'badge offline';
+        document.getElementById('badge-text').textContent = 'ERROR';
+
+        btn.disabled    = false;
+        btn.textContent = '▶  RETRY';
+
+        if (error.code === 'PERMISSION_DENIED') {
+          splashMsg(
+            '🔒 Permission Denied. In Firebase Console → Realtime Database → Rules, set both .read and .write to true, then retry.',
+            true
+          );
+        } else {
+          splashMsg(`Error: ${error.message}`, true);
+        }
+      }
+    );
+
+  } catch (e) {
+    dbg(`Init exception: ${e.message}`, true);
+    splashMsg(`Error: ${e.message}`, true);
+    btn.disabled    = false;
+    btn.textContent = '▶  RETRY';
   }
-}, (error) => {
-  console.error('Firebase error:', error);
-  document.getElementById('badge').className       = 'badge offline';
-  document.getElementById('badge-text').textContent = 'OFFLINE';
-});
+}
+
+/* ══════════════════════════════════════════
+   CAR CLASS
+══════════════════════════════════════════ */
+class Car {
+  constructor(dir, idx) {
+    this.direction = dir;
+    this.color     = CAR_COLORS[idx % CAR_COLORS.length];
+    this.speed     = 1.6 + idx * 0.12;
+    this.stopped   = false;
+    this.x = dir === 'south' ? CX - LANE_W * 0.5 : CX + LANE_W * 0.5;
+    this.y = dir === 'south' ? -50 - idx * 175     : H + 50 + idx * 175;
+  }
+
+  update(light, frontEdgeY) {
+    const stop = light === 'red' || light === 'yellow';
+
+    if (this.direction === 'south') {
+      if (this.y > SOUTH_STOP + 20) {
+        this.stopped = false; this.y += this.speed;
+        if (this.y > H+70) this.y = -70;
+        return;
+      }
+      let stopAt = SOUTH_STOP - CAR_H/2 - 3;
+      if (frontEdgeY !== null) stopAt = Math.min(stopAt, frontEdgeY - CAR_H - CAR_GAP);
+      if (stop && this.y >= stopAt) { this.y = stopAt; this.stopped = true; }
+      else { this.stopped = false; this.y += this.speed; if (this.y > H+70) this.y = -70; }
+
+    } else {
+      if (this.y < NORTH_STOP - 20) {
+        this.stopped = false; this.y -= this.speed;
+        if (this.y < -70) this.y = H+70;
+        return;
+      }
+      let stopAt = NORTH_STOP + CAR_H/2 + 3;
+      if (frontEdgeY !== null) stopAt = Math.max(stopAt, frontEdgeY + CAR_H + CAR_GAP);
+      if (stop && this.y <= stopAt) { this.y = stopAt; this.stopped = true; }
+      else { this.stopped = false; this.y -= this.speed; if (this.y < -70) this.y = H+70; }
+    }
+  }
+
+  draw(c) {
+    const x = this.x - CAR_W/2, y = this.y - CAR_H/2;
+    c.save(); c.globalAlpha=0.35; c.fillStyle='#000';
+    c.beginPath(); c.ellipse(this.x+2,this.y+5,CAR_W*0.44,CAR_H*0.18,0,0,Math.PI*2); c.fill();
+    c.restore();
+    c.fillStyle=this.color; c.beginPath(); c.roundRect(x,y,CAR_W,CAR_H,5); c.fill();
+    c.fillStyle='rgba(0,0,0,0.22)'; c.beginPath(); c.roundRect(x+3,y+9,CAR_W-6,CAR_H-18,3); c.fill();
+    c.fillStyle='rgba(173,216,255,0.9)';
+    if (this.direction==='south') c.fillRect(x+3,y+4,CAR_W-6,8);
+    else c.fillRect(x+3,y+CAR_H-12,CAR_W-6,8);
+    c.fillStyle='rgba(173,216,255,0.55)';
+    if (this.direction==='south') c.fillRect(x+3,y+CAR_H-11,CAR_W-6,6);
+    else c.fillRect(x+3,y+6,CAR_W-6,6);
+    c.fillStyle='#fffde7';
+    if (this.direction==='south') { c.fillRect(x+2,y,4,3); c.fillRect(x+CAR_W-6,y,4,3); }
+    else { c.fillRect(x+2,y+CAR_H-3,4,3); c.fillRect(x+CAR_W-6,y+CAR_H-3,4,3); }
+    c.fillStyle=this.stopped?'#ff1a1a':'#7f0000';
+    if (this.direction==='south') { c.fillRect(x+2,y+CAR_H-3,4,3); c.fillRect(x+CAR_W-6,y+CAR_H-3,4,3); }
+    else { c.fillRect(x+2,y,4,3); c.fillRect(x+CAR_W-6,y,4,3); }
+  }
+}
+
+/* ══════════════════════════════════════════
+   SCENE
+══════════════════════════════════════════ */
+function drawBuildingBlock(c, bx, by, bw, bh) {
+  if (bw<=0||bh<=0) return;
+  [{rx:.05,ry:.05,rw:.42,rh:.55,cl:'#1a2744'},{rx:.52,ry:.05,rw:.43,rh:.35,cl:'#0f1e35'},
+   {rx:.05,ry:.65,rw:.30,rh:.30,cl:'#162038'},{rx:.40,ry:.45,rw:.55,rh:.50,cl:'#0d1a2e'}]
+  .forEach(b => {
+    const x=bx+bw*b.rx,y=by+bh*b.ry,w=bw*b.rw,h=bh*b.rh;
+    if(w<5||h<5) return;
+    c.fillStyle=b.cl; c.fillRect(x,y,w,h);
+    c.strokeStyle='#1f2d3d'; c.lineWidth=1; c.strokeRect(x,y,w,h);
+    c.fillStyle='rgba(255,240,150,0.3)';
+    for(let wy=y+6;wy<y+h-8;wy+=14)
+      for(let wx=x+6;wx<x+w-6;wx+=12)
+        if((Math.floor((wy-y)/14)+Math.floor((wx-x)/12))%3!==0) c.fillRect(wx,wy,7,8);
+  });
+}
+
+function drawArrow(c,x,y,dir) {
+  c.fillStyle='rgba(255,255,255,0.28)'; c.beginPath();
+  if(dir==='south'){c.moveTo(x,y+14);c.lineTo(x+7,y+4);c.lineTo(x+3,y+4);c.lineTo(x+3,y-10);c.lineTo(x-3,y-10);c.lineTo(x-3,y+4);c.lineTo(x-7,y+4);}
+  else{c.moveTo(x,y-14);c.lineTo(x+7,y-4);c.lineTo(x+3,y-4);c.lineTo(x+3,y+10);c.lineTo(x-3,y+10);c.lineTo(x-3,y-4);c.lineTo(x-7,y-4);}
+  c.closePath(); c.fill();
+}
+
+function drawLightHousing(c,hx,hy,hw,hh,light) {
+  c.fillStyle='#1f2937'; c.beginPath(); c.roundRect(hx,hy,hw,hh,5); c.fill();
+  c.strokeStyle='#374151'; c.lineWidth=1.5; c.beginPath(); c.roundRect(hx,hy,hw,hh,5); c.stroke();
+  [{state:'red',on:'#ef4444',off:'#450a0a'},{state:'yellow',on:'#f59e0b',off:'#3d2900'},{state:'green',on:'#22c55e',off:'#052e16'}]
+  .forEach(({state,on,off},i)=>{
+    const lx=hx+hw/2,ly=hy+14+i*24,r=9,active=(light===state);
+    if(active){const g=c.createRadialGradient(lx,ly,0,lx,ly,22);g.addColorStop(0,on+'aa');g.addColorStop(1,'transparent');c.fillStyle=g;c.fillRect(lx-22,ly-22,44,44);}
+    c.beginPath();c.arc(lx,ly,r,0,Math.PI*2);c.fillStyle=active?on:off;c.fill();
+    if(active){c.beginPath();c.arc(lx-3,ly-3,3,0,Math.PI*2);c.fillStyle='rgba(255,255,255,0.3)';c.fill();}
+  });
+}
+
+function drawTrafficLight(c,x,y,light,pos) {
+  const isNW=pos==='NW',hw=27,hh=75;
+  c.fillStyle='#6b7280';
+  if(isNW){c.fillRect(x-4,y,8,42);c.fillRect(x-4,y,hw/2+8,6);drawLightHousing(c,x+4,y-hh,hw,hh,light);}
+  else{c.fillRect(x-4,y-42,8,42);c.fillRect(x-hw/2-8,y-6,hw/2+8,6);drawLightHousing(c,x-4-hw,y-hh,hw,hh,light);}
+}
+
+function drawScene(c,light) {
+  const bW=CX-ROAD_HALF-SIDEWALK, bH=CY-ROAD_HALF-SIDEWALK;
+  c.fillStyle='#111827';
+  c.fillRect(0,0,bW,bH); c.fillRect(CX+ROAD_HALF+SIDEWALK,0,W-CX-ROAD_HALF-SIDEWALK,bH);
+  c.fillRect(0,CY+ROAD_HALF+SIDEWALK,bW,H-CY-ROAD_HALF-SIDEWALK);
+  c.fillRect(CX+ROAD_HALF+SIDEWALK,CY+ROAD_HALF+SIDEWALK,W-CX-ROAD_HALF-SIDEWALK,H-CY-ROAD_HALF-SIDEWALK);
+  drawBuildingBlock(c,0,0,bW,bH);
+  drawBuildingBlock(c,CX+ROAD_HALF+SIDEWALK,0,W-CX-ROAD_HALF-SIDEWALK,bH);
+  drawBuildingBlock(c,0,CY+ROAD_HALF+SIDEWALK,bW,H-CY-ROAD_HALF-SIDEWALK);
+  drawBuildingBlock(c,CX+ROAD_HALF+SIDEWALK,CY+ROAD_HALF+SIDEWALK,W-CX-ROAD_HALF-SIDEWALK,H-CY-ROAD_HALF-SIDEWALK);
+  c.fillStyle='#9ca3af';
+  c.fillRect(CX-ROAD_HALF-SIDEWALK,0,SIDEWALK,CY-ROAD_HALF); c.fillRect(CX+ROAD_HALF,0,SIDEWALK,CY-ROAD_HALF);
+  c.fillRect(CX-ROAD_HALF-SIDEWALK,CY+ROAD_HALF,SIDEWALK,H-CY-ROAD_HALF); c.fillRect(CX+ROAD_HALF,CY+ROAD_HALF,SIDEWALK,H-CY-ROAD_HALF);
+  c.fillRect(0,CY-ROAD_HALF-SIDEWALK,CX-ROAD_HALF,SIDEWALK); c.fillRect(CX+ROAD_HALF,CY-ROAD_HALF-SIDEWALK,W-CX-ROAD_HALF,SIDEWALK);
+  c.fillRect(0,CY+ROAD_HALF,CX-ROAD_HALF,SIDEWALK); c.fillRect(CX+ROAD_HALF,CY+ROAD_HALF,W-CX-ROAD_HALF,SIDEWALK);
+  c.fillStyle='#374151'; c.fillRect(CX-ROAD_HALF,0,ROAD_HALF*2,H); c.fillRect(0,CY-ROAD_HALF,W,ROAD_HALF*2);
+  c.fillStyle='#3d4a5c'; c.fillRect(CX-ROAD_HALF,CY-ROAD_HALF,ROAD_HALF*2,ROAD_HALF*2);
+  c.fillStyle='#d1d5db';
+  for(let i=0;i<4;i++){const s=9,g=6;
+    c.fillRect(CX-ROAD_HALF+5+i*(s+g),CY-ROAD_HALF-15,s,15); c.fillRect(CX-ROAD_HALF+5+i*(s+g),CY+ROAD_HALF,s,15);
+    c.fillRect(CX-ROAD_HALF-15,CY-ROAD_HALF+5+i*(s+g),15,s); c.fillRect(CX+ROAD_HALF,CY-ROAD_HALF+5+i*(s+g),15,s);}
+  c.strokeStyle='#fbbf24'; c.lineWidth=2; c.setLineDash([22,16]);
+  c.beginPath(); c.moveTo(CX,0); c.lineTo(CX,CY-ROAD_HALF); c.moveTo(CX,CY+ROAD_HALF); c.lineTo(CX,H);
+  c.moveTo(0,CY); c.lineTo(CX-ROAD_HALF,CY); c.moveTo(CX+ROAD_HALF,CY); c.lineTo(W,CY);
+  c.stroke(); c.setLineDash([]);
+  c.strokeStyle='#ffffff'; c.lineWidth=3; c.beginPath();
+  c.moveTo(CX-ROAD_HALF+2,SOUTH_STOP); c.lineTo(CX-2,SOUTH_STOP);
+  c.moveTo(CX+2,NORTH_STOP); c.lineTo(CX+ROAD_HALF-2,NORTH_STOP);
+  c.stroke();
+  drawArrow(c,CX-LANE_W*0.5,CY-ROAD_HALF-60,'south');
+  drawArrow(c,CX+LANE_W*0.5,CY+ROAD_HALF+60,'north');
+  drawTrafficLight(c,CX-ROAD_HALF-8,CY-ROAD_HALF,light,'NW');
+  drawTrafficLight(c,CX+ROAD_HALF+8,CY+ROAD_HALF,light,'SE');
+}
+
+/* ══════════════════════════════════════════
+   ANIMATION LOOP
+══════════════════════════════════════════ */
+const southCars = [new Car('south',0), new Car('south',1), new Car('south',2)];
+const northCars = [new Car('north',0), new Car('north',1), new Car('north',2)];
+
+(function animate() {
+  ctx.clearRect(0,0,W,H);
+  drawScene(ctx, currentLight);
+
+  const south = [...southCars].sort((a,b)=>b.y-a.y);
+  south.forEach((car,i)=>car.update(currentLight, i>0 ? south[i-1].y-CAR_H/2 : null));
+
+  const north = [...northCars].sort((a,b)=>a.y-b.y);
+  north.forEach((car,i)=>car.update(currentLight, i>0 ? north[i-1].y+CAR_H/2 : null));
+
+  [...south,...north].forEach(car=>car.draw(ctx));
+  requestAnimationFrame(animate);
+})();
 </script>
 </body>
 </html>
