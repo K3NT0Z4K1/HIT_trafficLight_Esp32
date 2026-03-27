@@ -53,6 +53,7 @@
     }
     .badge.live    { background:rgba(34,197,94,0.1);  color:#22c55e; border-color:rgba(34,197,94,0.3); }
     .badge.offline { background:rgba(239,68,68,0.1);  color:#ef4444; border-color:rgba(239,68,68,0.3); }
+    .badge.connecting { background:rgba(251,191,36,0.1); color:#fbbf24; border-color:rgba(251,191,36,0.3); }
     .pulse-dot {
       width:7px; height:7px;
       border-radius:50%;
@@ -115,6 +116,41 @@
     .info-val   { font-size:1.6rem; font-weight:700; font-family:'JetBrains Mono',monospace; line-height:1.1; }
     .unit       { font-size:0.95rem; color:#6b7280; margin-left:1px; font-weight:400; }
 
+    /* Countdown ring */
+    .countdown-box {
+      background:#0d1117;
+      border:1px solid #1f2937;
+      border-radius:10px;
+      padding:14px;
+      text-align:center;
+    }
+    .countdown-ring-wrap {
+      position: relative;
+      display: inline-block;
+      width: 80px;
+      height: 80px;
+      margin: 6px auto 0;
+    }
+    .countdown-ring-wrap svg {
+      transform: rotate(-90deg);
+    }
+    .ring-bg { fill: none; stroke: #1f2937; stroke-width: 6; }
+    .ring-fg {
+      fill: none;
+      stroke-width: 6;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s linear, stroke 0.4s;
+    }
+    .ring-label {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
     .update-box {
       background:#0d1117;
       border:1px solid #1f2937;
@@ -171,7 +207,7 @@
 <header>
   <span class="logo">🚦 TrafficSim</span>
   <span class="header-title">ESP32 Traffic Light Monitor</span>
-  <span class="badge offline" id="badge">
+  <span class="badge connecting" id="badge">
     <span class="pulse-dot"></span>
     <span id="badge-text">CONNECTING...</span>
   </span>
@@ -181,28 +217,42 @@
   <canvas id="sim" width="560" height="560"></canvas>
 
   <div class="panel">
-    <div class="light-card" id="light-card" style="background:#1a0505; border-color:#ef4444;">
-      <div class="light-emoji" id="light-emoji">🔴</div>
-      <div class="light-label" id="light-label" style="color:#ef4444;">RED</div>
+    <!-- Light state card -->
+    <div class="light-card" id="light-card" style="background:#0d1117; border-color:#374151;">
+      <div class="light-emoji" id="light-emoji">⏳</div>
+      <div class="light-label" id="light-label" style="color:#6b7280;">WAITING</div>
       <div class="light-sub">North ↕ South</div>
     </div>
 
+    <!-- Countdown ring + direction -->
     <div class="info-row">
-      <div class="info-box">
-        <div class="info-label">Duration</div>
-        <div class="info-val"><span id="time-left">--</span><span class="unit">s</span></div>
+      <div class="countdown-box">
+        <div class="info-label">Time Left</div>
+        <div class="countdown-ring-wrap">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle class="ring-bg" cx="40" cy="40" r="34"/>
+            <circle class="ring-fg" id="ring-fg" cx="40" cy="40" r="34"
+              stroke="#ef4444"
+              stroke-dasharray="213.6"
+              stroke-dashoffset="0"/>
+          </svg>
+          <div class="ring-label" id="ring-label" style="color:#ef4444;">--</div>
+        </div>
       </div>
-      <div class="info-box">
+      <div class="info-box" style="display:flex;flex-direction:column;justify-content:center;">
         <div class="info-label">Direction</div>
         <div class="info-val" style="font-size:1.2rem">N ↕ S</div>
+        <div style="font-size:0.7rem;color:#6b7280;margin-top:4px;">Vertical axis</div>
       </div>
     </div>
 
+    <!-- Last Firebase update -->
     <div class="update-box">
       <div class="info-label">Last Firebase Update</div>
       <div class="update-val" id="updated-at">Connecting to Firebase...</div>
     </div>
 
+    <!-- Change log -->
     <div class="section-box">
       <div class="section-title">Change Log</div>
       <div id="log-list">
@@ -210,16 +260,17 @@
       </div>
     </div>
 
+    <!-- Legend -->
     <div class="section-box">
       <div class="section-title">Legend</div>
-      <div class="legend-item"><span class="dot red"></span> Red — Cars stop</div>
-      <div class="legend-item"><span class="dot yellow"></span> Yellow — Slow down</div>
-      <div class="legend-item"><span class="dot green"></span> Green — Cars move</div>
+      <div class="legend-item"><span class="dot red"></span> Red — Cars stop (30s)</div>
+      <div class="legend-item"><span class="dot green"></span> Green — Cars move (25s)</div>
+      <div class="legend-item"><span class="dot yellow"></span> Yellow — Slow down (5s)</div>
     </div>
   </div>
 </div>
 
-<!-- Firebase CDN — no npm or installation needed! -->
+<!-- Firebase CDN -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
@@ -239,7 +290,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db       = firebase.database();
-const lightRef = db.ref('traffic_light/status'); // path in your Firebase DB
+const lightRef = db.ref('traffic_light/status');
 
 /* ============================================================
    CANVAS CONSTANTS
@@ -256,6 +307,46 @@ const CAR_COLORS = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c',
 
 let currentLight = 'red';
 let logEntries   = [];
+
+/* ============================================================
+   COUNTDOWN — CLIENT-SIDE TICKER
+   FIX: ESP32 only sends total duration once per phase.
+   We store it and count down locally every second.
+============================================================ */
+let countdownInterval = null;
+let timeLeft          = 0;
+let totalDuration     = 30; // used for ring % calculation
+
+const CIRCUMFERENCE = 2 * Math.PI * 34; // r=34 matches SVG
+
+function startCountdown(duration) {
+  clearInterval(countdownInterval);
+  timeLeft      = duration;
+  totalDuration = duration;
+  updateRing();
+
+  countdownInterval = setInterval(() => {
+    if (timeLeft > 0) {
+      timeLeft--;
+      updateRing();
+    } else {
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
+}
+
+function updateRing() {
+  const pct    = totalDuration > 0 ? timeLeft / totalDuration : 0;
+  const offset = CIRCUMFERENCE * (1 - pct);
+  const ring   = document.getElementById('ring-fg');
+  const label  = document.getElementById('ring-label');
+  const li     = lightInfo[currentLight] || lightInfo.red;
+
+  ring.style.strokeDashoffset = offset;
+  ring.style.stroke           = li.color;
+  label.textContent           = timeLeft > 0 ? timeLeft : '--';
+  label.style.color           = li.color;
+}
 
 /* ============================================================
    CAR CLASS
@@ -476,22 +567,29 @@ function updateUI(data) {
   const light = (data.north_south || 'red').toLowerCase();
   const li    = lightInfo[light] || lightInfo.red;
 
-  document.getElementById('light-emoji').textContent        = li.emoji;
-  document.getElementById('light-label').textContent        = li.label;
-  document.getElementById('light-label').style.color       = li.color;
-  document.getElementById('light-card').style.background   = li.bg;
-  document.getElementById('light-card').style.borderColor  = li.color;
-  document.getElementById('time-left').textContent         = data.duration ?? '--';
-  document.getElementById('updated-at').textContent        = data.updated_at ?? 'N/A';
+  // Update light card
+  document.getElementById('light-emoji').textContent       = li.emoji;
+  document.getElementById('light-label').textContent       = li.label;
+  document.getElementById('light-label').style.color      = li.color;
+  document.getElementById('light-card').style.background  = li.bg;
+  document.getElementById('light-card').style.borderColor = li.color;
+  document.getElementById('updated-at').textContent       = data.updated_at ?? 'N/A';
 
+  // Log change if state changed
   if (light !== currentLight) {
     logEntries.unshift({ time: new Date().toLocaleTimeString(), state: light });
-    if (logEntries.length > 5) logEntries.pop();
+    if (logEntries.length > 6) logEntries.pop();
     renderLog();
   }
 
+  // FIX: update currentLight BEFORE starting countdown so ring color is correct
   currentLight = light;
-  document.getElementById('badge').className = 'badge live';
+
+  // FIX: start client-side countdown from the duration ESP32 sent
+  startCountdown(data.duration ?? 0);
+
+  // Badge — live
+  document.getElementById('badge').className    = 'badge live';
   document.getElementById('badge-text').textContent = 'LIVE';
 }
 
@@ -512,15 +610,15 @@ function renderLog() {
 
 /* ============================================================
    FIREBASE REALTIME LISTENER
-   This fires INSTANTLY whenever your ESP32 updates the DB!
-   No polling — Firebase pushes the change to your browser.
+   Fires instantly whenever ESP32 updates the DB.
+   No polling needed — Firebase pushes changes to the browser.
 ============================================================ */
 lightRef.on('value', (snapshot) => {
   const data = snapshot.val();
-  if (data) {
+  if (data && data.north_south) {
     updateUI(data);
   } else {
-    // First time setup — write default data to Firebase
+    // First run — write safe defaults so the page has something to show
     lightRef.set({
       north_south: 'red',
       duration:    30,
@@ -529,7 +627,7 @@ lightRef.on('value', (snapshot) => {
   }
 }, (error) => {
   console.error('Firebase error:', error);
-  document.getElementById('badge').className = 'badge offline';
+  document.getElementById('badge').className       = 'badge offline';
   document.getElementById('badge-text').textContent = 'OFFLINE';
 });
 </script>
