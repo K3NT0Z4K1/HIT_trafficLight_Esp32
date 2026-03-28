@@ -8,9 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
-    :root {
-      --bg:#030712; --panel:#0d1117; --border:#1f2937;
-    }
+    :root { --bg:#030712; --panel:#0d1117; --border:#1f2937; }
+
     body {
       background:var(--bg); color:#e5e7eb;
       font-family:'Rajdhani',sans-serif;
@@ -54,23 +53,48 @@
       backdrop-filter:blur(4px);
     }
     #splash h1 { font-size:2.4rem; font-weight:700; letter-spacing:0.08em; }
-    #splash p  { color:#6b7280; font-size:1rem; text-align:center; max-width:380px; line-height:1.75; }
+    #splash p  { color:#6b7280; font-size:1rem; text-align:center; max-width:400px; line-height:1.8; }
     #splash p strong { color:#e5e7eb; }
+
+    .steps {
+      display:flex; flex-direction:column; gap:8px;
+      width:100%; max-width:380px;
+    }
+    .step {
+      display:flex; align-items:center; gap:12px;
+      background:#0d1117; border:1px solid #1f2937;
+      border-radius:10px; padding:10px 14px;
+      font-size:0.9rem; color:#9ca3af;
+      transition: border-color 0.3s, color 0.3s;
+    }
+    .step .num {
+      width:24px; height:24px; border-radius:50%;
+      background:#1f2937; color:#6b7280;
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.75rem; font-weight:700; flex-shrink:0;
+      transition: background 0.3s, color 0.3s;
+    }
+    .step.done   { border-color:#22c55e44; color:#e5e7eb; }
+    .step.done .num  { background:#22c55e; color:#000; }
+    .step.active { border-color:#fbbf2444; color:#e5e7eb; }
+    .step.active .num { background:#fbbf24; color:#000; }
+
     #start-btn {
-      margin-top:6px; padding:14px 48px;
+      margin-top:4px; padding:14px 48px;
       background:#22c55e; color:#030712;
       border:none; border-radius:10px;
       font-family:'Rajdhani',sans-serif;
       font-size:1.25rem; font-weight:700; letter-spacing:0.12em;
-      cursor:pointer; transition:background 0.2s,transform 0.1s;
+      cursor:pointer; transition:background 0.2s, transform 0.1s;
     }
     #start-btn:hover  { background:#16a34a; }
     #start-btn:active { transform:scale(0.97); }
     #start-btn:disabled { background:#1f2937; color:#4b5563; cursor:not-allowed; }
+
     #splash-msg {
       font-family:'JetBrains Mono',monospace;
       font-size:0.78rem; color:#4b5563;
-      min-height:1.5em; text-align:center; max-width:400px;
+      min-height:1.5em; text-align:center; max-width:420px;
     }
     #splash-msg.ok  { color:#22c55e; }
     #splash-msg.err { color:#ef4444; }
@@ -97,7 +121,7 @@
     .light-card {
       border-radius:12px; border:2px solid;
       padding:18px 14px 14px; text-align:center;
-      transition:background 0.4s,border-color 0.4s;
+      transition:background 0.4s, border-color 0.4s;
     }
     .light-emoji { font-size:2.2rem; line-height:1; margin-bottom:2px; }
     .light-label { font-size:1.9rem; font-weight:700; letter-spacing:0.12em; line-height:1.1; transition:color 0.3s; }
@@ -111,7 +135,6 @@
     .info-label { font-size:0.68rem; color:#6b7280; text-transform:uppercase; letter-spacing:0.09em; margin-bottom:3px; }
     .info-val { font-size:1.6rem; font-weight:700; font-family:'JetBrains Mono',monospace; line-height:1.1; }
 
-    /* Ring */
     .countdown-box {
       background:var(--panel); border:1px solid var(--border);
       border-radius:10px; padding:14px; text-align:center;
@@ -122,7 +145,7 @@
     }
     .ring-wrap svg { transform:rotate(-90deg); }
     .ring-bg { fill:none; stroke:#1f2937; stroke-width:6; }
-    .ring-fg { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 1s linear,stroke 0.4s; }
+    .ring-fg { fill:none; stroke-width:6; stroke-linecap:round; transition:stroke-dashoffset 1s linear, stroke 0.4s; }
     .ring-lbl {
       position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
       font-family:'JetBrains Mono',monospace; font-size:1.35rem; font-weight:700; line-height:1;
@@ -161,7 +184,6 @@
 
     .legend-item { display:flex; align-items:center; gap:9px; font-size:0.82rem; color:#9ca3af; padding:4px 0; }
 
-    /* DEBUG */
     #debug-bar {
       background:#060b14; border-top:1px solid var(--border);
       padding:5px 16px; font-family:'JetBrains Mono',monospace;
@@ -182,14 +204,17 @@
 
 <!-- SPLASH -->
 <div id="splash">
-  <div style="font-size:3.5rem">🚦</div>
+  <div style="font-size:3rem">🚦</div>
   <h1>TrafficSim</h1>
-  <p>
-    Make sure your <strong>ESP32 is powered on</strong> and connected to WiFi first.<br>
-    The dashboard will only start the timer and move cars <strong>after receiving live data from Firebase</strong>.
-  </p>
-  <button id="start-btn" onclick="startSim()">▶ &nbsp;START SIMULATION</button>
-  <div id="splash-msg">Ready — press Start when ESP32 is running.</div>
+
+  <div class="steps">
+    <div class="step" id="step1"><div class="num">1</div> Plug in your ESP32 and wait for its yellow LED to blink</div>
+    <div class="step" id="step2"><div class="num">2</div> Press Begin — webpage connects to Firebase</div>
+    <div class="step" id="step3"><div class="num">3</div> ESP32 detects the signal and starts the light cycle</div>
+  </div>
+
+  <button id="start-btn" onclick="beginSimulation()">▶ &nbsp;BEGIN SIMULATION</button>
+  <div id="splash-msg">Waiting — plug in ESP32 first, then press Begin.</div>
 </div>
 
 <!-- HEADER -->
@@ -202,14 +227,11 @@
   </span>
 </header>
 
-<!-- MAIN -->
 <div class="content">
   <canvas id="sim" width="560" height="520"></canvas>
 
   <div class="panel">
-
-    <div class="light-card" id="light-card"
-         style="background:#0d1117;border-color:#1f2937;">
+    <div class="light-card" id="light-card" style="background:#0d1117;border-color:#1f2937;">
       <div class="light-emoji" id="light-emoji">⏳</div>
       <div class="light-label" id="light-label" style="color:#4b5563;">WAITING</div>
       <div class="light-sub">North ↕ South</div>
@@ -241,9 +263,7 @@
 
     <div class="section-box">
       <div class="section-title">Change Log</div>
-      <div id="log-list">
-        <div class="log-empty">Waiting for light changes…</div>
-      </div>
+      <div id="log-list"><div class="log-empty">Waiting for light changes…</div></div>
     </div>
 
     <div class="section-box">
@@ -252,18 +272,17 @@
       <div class="legend-item"><span class="dot green"></span> Green — Cars move (25s)</div>
       <div class="legend-item"><span class="dot yellow"></span> Yellow — Slow down (5s)</div>
     </div>
-
   </div>
 </div>
 
-<div id="debug-bar"><span class="ts">--:--:--</span> Press Start to begin.</div>
+<div id="debug-bar"><span class="ts">--:--:--</span> Press Begin Simulation to start.</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <script>
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    FIREBASE CONFIG
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 const FB_CFG = {
   apiKey:            "AIzaSyC6r5kNnapVhrzPQ-vA_Xm6pZRm6HQ3N7U",
   authDomain:        "traffic-sim-5a9ef.firebaseapp.com",
@@ -274,31 +293,29 @@ const FB_CFG = {
   appId:             "1:511074874213:web:a6b727744263d6b9be278c"
 };
 
-/* ═══════════════════════════════════════════════════
-   CANVAS
-═══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   CANVAS CONSTANTS
+══════════════════════════════════════════ */
 const W=560, H=520, CX=W/2, CY=H/2;
 const ROAD_HALF=52, LANE_W=52, SIDEWALK=10;
 const SOUTH_STOP=CY-ROAD_HALF, NORTH_STOP=CY+ROAD_HALF;
 const CAR_W=22, CAR_H=38, CAR_GAP=8;
 const CAR_COLORS=['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#1abc9c','#e67e22'];
-const CIRC = 2*Math.PI*34;   // circumference for r=34
+const CIRC = 2*Math.PI*34;
 
 const canvas = document.getElementById('sim');
 const ctx    = canvas.getContext('2d');
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    STATE
-   currentLight = null  →  Firebase not connected yet
-                           cars are frozen, ring shows --
-   currentLight = 'red'/'yellow'/'green'  → live from Firebase
-═══════════════════════════════════════════════════ */
-let currentLight  = null;   // ← null until Firebase sends real data
-let logEntries    = [];
-let cdInterval    = null;
-let timeLeft      = 0;
-let totalDuration = 1;
-let fbConnected   = false;
+   currentLight = null  → not started yet
+                          cars frozen, lights dark, no countdown
+══════════════════════════════════════════ */
+let currentLight = null;
+let logEntries   = [];
+let cdInterval   = null;
+let timeLeft     = 0;
+let totalDur     = 1;
 
 const LINFO = {
   red:    { emoji:'🔴', label:'RED',    color:'#ef4444', bg:'#1a0505' },
@@ -306,9 +323,9 @@ const LINFO = {
   green:  { emoji:'🟢', label:'GREEN',  color:'#22c55e', bg:'#051a0d' },
 };
 
-/* ═══════════════════════════════════════════════════
-   HELPERS
-═══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
 function dbg(msg, err=false) {
   const ts = new Date().toLocaleTimeString();
   console[err?'error':'log'](`[TrafficSim][${ts}]`, msg);
@@ -322,49 +339,55 @@ function setSplashMsg(msg, cls='') {
   el.className = cls;
 }
 
-function setBadge(cls, text) {
-  document.getElementById('badge').className = 'badge ' + cls;
-  document.getElementById('badge-txt').textContent = text;
+function setBadge(cls, txt) {
+  document.getElementById('badge').className   = 'badge ' + cls;
+  document.getElementById('badge-txt').textContent = txt;
 }
 
-/* ═══════════════════════════════════════════════════
-   COUNTDOWN  — only starts when Firebase sends data
-═══════════════════════════════════════════════════ */
+function setStep(n, state) {   // state: 'done' | 'active' | ''
+  const el = document.getElementById('step' + n);
+  el.className = 'step ' + state;
+}
+
+/* ══════════════════════════════════════════
+   COUNTDOWN — only called from applyLight()
+   which is only called when Firebase pushes
+   real data AFTER the ready flag is set
+══════════════════════════════════════════ */
 function startCountdown(duration) {
   clearInterval(cdInterval);
-  timeLeft      = parseInt(duration) || 0;
-  totalDuration = timeLeft > 0 ? timeLeft : 1;
-  renderRing();
+  timeLeft = parseInt(duration) || 0;
+  totalDur = timeLeft > 0 ? timeLeft : 1;
+  tickRing();
   cdInterval = setInterval(() => {
-    if (timeLeft > 0) { timeLeft--; renderRing(); }
+    if (timeLeft > 0) { timeLeft--; tickRing(); }
     else clearInterval(cdInterval);
   }, 1000);
 }
 
-function renderRing() {
+function tickRing() {
   const color  = currentLight ? LINFO[currentLight].color : '#374151';
-  const offset = timeLeft > 0 ? CIRC * (1 - timeLeft/totalDuration) : CIRC;
+  const offset = timeLeft > 0 ? CIRC*(1 - timeLeft/totalDur) : CIRC;
   document.getElementById('ring-fg').style.strokeDashoffset = offset;
   document.getElementById('ring-fg').style.stroke           = color;
   document.getElementById('ring-lbl').textContent           = timeLeft > 0 ? timeLeft : '--';
   document.getElementById('ring-lbl').style.color           = color;
 }
 
-/* ═══════════════════════════════════════════════════
-   APPLY LIGHT  — called only when Firebase pushes a
-   valid snapshot; never called on page load by itself
-═══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   APPLY LIGHT
+   Only called when Firebase pushes a valid
+   state — never on page load
+══════════════════════════════════════════ */
 function applyLight(rawState, duration, updatedAt) {
   const light = String(rawState||'').toLowerCase().trim();
   if (!LINFO[light]) {
-    dbg(`Unknown state from Firebase: "${rawState}"`, true);
+    dbg(`Unknown Firebase state: "${rawState}"`, true);
     return;
   }
-
   const li = LINFO[light];
-  dbg(`Firebase → ${light.toUpperCase()} for ${duration}s`);
+  dbg(`Firebase → ${light.toUpperCase()} | ${duration}s`);
 
-  // Card
   document.getElementById('light-emoji').textContent       = li.emoji;
   document.getElementById('light-label').textContent       = li.label;
   document.getElementById('light-label').style.color      = li.color;
@@ -372,19 +395,14 @@ function applyLight(rawState, duration, updatedAt) {
   document.getElementById('light-card').style.borderColor = li.color;
   document.getElementById('updated-at').textContent       = updatedAt || '—';
 
-  // Change log (only when state actually changes)
   if (light !== currentLight) {
     logEntries.unshift({ time: new Date().toLocaleTimeString(), state: light });
     if (logEntries.length > 6) logEntries.pop();
     renderLog();
   }
 
-  // Update global state BEFORE countdown so ring colour is correct
-  currentLight = light;
-
-  // Start client-side countdown from the duration the ESP32 sent
+  currentLight = light;       // set BEFORE startCountdown so ring colour is right
   startCountdown(duration);
-
   setBadge('live', 'LIVE');
 }
 
@@ -402,109 +420,113 @@ function renderLog() {
     </div>`).join('');
 }
 
-/* ═══════════════════════════════════════════════════
-   START BUTTON
-═══════════════════════════════════════════════════ */
-function startSim() {
+/* ══════════════════════════════════════════
+   BEGIN SIMULATION — the Start button
+   
+   Steps:
+   1. Connect to Firebase
+   2. Start listening to /traffic_light/status
+   3. Write ready=true  → unblocks the ESP32
+   4. ESP32 starts its cycle and pushes the
+      first state → applyLight() fires
+══════════════════════════════════════════ */
+function beginSimulation() {
   const btn = document.getElementById('start-btn');
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = '⏳  Connecting…';
   setSplashMsg('Connecting to Firebase…');
   setBadge('connecting', 'CONNECTING…');
+  setStep(1, 'done');
+  setStep(2, 'active');
   dbg('Connecting to Firebase…');
 
   try {
     if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
-    const lightRef = firebase.database().ref('traffic_light/status');
+    const db        = firebase.database();
+    const statusRef = db.ref('traffic_light/status');
+    const readyRef  = db.ref('traffic_light/ready');
 
-    lightRef.on('value',
+    // Step 1: attach listener BEFORE writing ready=true
+    // so we don't miss the first push from the ESP32
+    statusRef.on('value',
       (snap) => {
         const data = snap.val();
-        dbg('Snapshot received: ' + JSON.stringify(data));
-
-        // Hide splash on first successful connection (even if data is null)
-        if (!fbConnected) {
-          fbConnected = true;
-          document.getElementById('splash').style.display = 'none';
-          setBadge('connecting', 'WAITING FOR ESP32…');
-        }
+        dbg('Status snapshot: ' + JSON.stringify(data));
 
         if (data && LINFO[String(data.north_south||'').toLowerCase().trim()]) {
-          // ✅ Valid data from ESP32 — apply it
+          // Real data arrived from ESP32 — hide splash and go live
+          document.getElementById('splash').style.display = 'none';
+          setStep(3, 'done');
           applyLight(data.north_south, data.duration, data.updated_at);
         } else {
-          // DB has no valid state yet (ESP32 not sent anything)
-          dbg('No valid ESP32 data in DB yet — waiting…');
+          // No valid data yet — ESP32 is still waiting or booting
+          dbg('Waiting for ESP32 to start its cycle…');
           setBadge('connecting', 'WAITING FOR ESP32…');
-          // Do NOT start countdown. Do NOT move cars. Just wait.
+          setSplashMsg('✅ Firebase connected — waiting for ESP32 to start…', 'ok');
+          setStep(2, 'done');
+          setStep(3, 'active');
         }
       },
       (err) => {
         dbg(`Firebase error: ${err.code} — ${err.message}`, true);
         setBadge('offline', 'ERROR');
-        btn.disabled = false;
+        btn.disabled    = false;
         btn.textContent = '▶  RETRY';
-
         if (err.code === 'PERMISSION_DENIED') {
-          setSplashMsg(
-            '🔒 Permission Denied! Go to Firebase Console → Realtime Database → Rules and set .read and .write to true, then click Retry.',
-            'err'
-          );
+          setSplashMsg('🔒 Permission Denied — set Firebase Rules .read and .write to true, then retry.', 'err');
         } else {
           setSplashMsg('Error: ' + err.message, 'err');
         }
-        document.getElementById('splash').style.display = 'flex';
       }
     );
+
+    // Step 2: write ready=true — this unblocks the ESP32's waitForWebpageReady()
+    readyRef.set(true)
+      .then(() => dbg('Ready flag set → ESP32 will now start its cycle'))
+      .catch(e  => dbg('Could not write ready flag: ' + e.message, true));
 
   } catch(e) {
     dbg('Init error: ' + e.message, true);
     setSplashMsg('Error: ' + e.message, 'err');
-    btn.disabled = false;
+    btn.disabled    = false;
     btn.textContent = '▶  RETRY';
   }
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    CAR CLASS
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 class Car {
   constructor(dir, idx) {
-    this.dir    = dir;
-    this.color  = CAR_COLORS[idx % CAR_COLORS.length];
-    this.speed  = 1.6 + idx * 0.12;
+    this.dir     = dir;
+    this.color   = CAR_COLORS[idx % CAR_COLORS.length];
+    this.speed   = 1.6 + idx * 0.12;
     this.stopped = false;
     this.x = dir==='south' ? CX-LANE_W*0.5 : CX+LANE_W*0.5;
     this.y = dir==='south' ? -50-idx*175    : H+50+idx*175;
   }
 
   update(frontEdgeY) {
-    // If no Firebase data yet, freeze everything
-    if (currentLight === null) return;
-
-    const shouldStop = currentLight==='red' || currentLight==='yellow';
+    if (currentLight === null) return;   // frozen until Firebase is live
+    const stop = currentLight==='red' || currentLight==='yellow';
 
     if (this.dir === 'south') {
-      // Car is above the stop line — just drive
       if (this.y > SOUTH_STOP+20) {
         this.stopped=false; this.y+=this.speed;
-        if (this.y>H+70) this.y=-70;
-        return;
+        if (this.y>H+70) this.y=-70; return;
       }
-      let stopAt = SOUTH_STOP - CAR_H/2 - 3;
-      if (frontEdgeY!==null) stopAt = Math.min(stopAt, frontEdgeY-CAR_H-CAR_GAP);
-      if (shouldStop && this.y>=stopAt) { this.y=stopAt; this.stopped=true; }
+      let stopAt = SOUTH_STOP-CAR_H/2-3;
+      if (frontEdgeY!==null) stopAt=Math.min(stopAt, frontEdgeY-CAR_H-CAR_GAP);
+      if (stop && this.y>=stopAt) { this.y=stopAt; this.stopped=true; }
       else { this.stopped=false; this.y+=this.speed; if(this.y>H+70) this.y=-70; }
-
     } else {
       if (this.y < NORTH_STOP-20) {
         this.stopped=false; this.y-=this.speed;
-        if (this.y<-70) this.y=H+70;
-        return;
+        if (this.y<-70) this.y=H+70; return;
       }
-      let stopAt = NORTH_STOP + CAR_H/2 + 3;
-      if (frontEdgeY!==null) stopAt = Math.max(stopAt, frontEdgeY+CAR_H+CAR_GAP);
-      if (shouldStop && this.y<=stopAt) { this.y=stopAt; this.stopped=true; }
+      let stopAt = NORTH_STOP+CAR_H/2+3;
+      if (frontEdgeY!==null) stopAt=Math.max(stopAt, frontEdgeY+CAR_H+CAR_GAP);
+      if (stop && this.y<=stopAt) { this.y=stopAt; this.stopped=true; }
       else { this.stopped=false; this.y-=this.speed; if(this.y<-70) this.y=H+70; }
     }
   }
@@ -531,9 +553,9 @@ class Car {
   }
 }
 
-/* ═══════════════════════════════════════════════════
-   SCENE
-═══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════
+   SCENE DRAWING
+══════════════════════════════════════════ */
 function drawBB(c,bx,by,bw,bh) {
   if(bw<=0||bh<=0) return;
   [{rx:.05,ry:.05,rw:.42,rh:.55,cl:'#1a2744'},{rx:.52,ry:.05,rw:.43,rh:.35,cl:'#0f1e35'},
@@ -558,7 +580,6 @@ function drawArrow(c,x,y,dir) {
 }
 
 function drawHousing(c,hx,hy,hw,hh,light) {
-  // Use 'none' as placeholder when Firebase not connected yet — all lights off
   const active = light || 'none';
   c.fillStyle='#1f2937'; c.beginPath(); c.roundRect(hx,hy,hw,hh,5); c.fill();
   c.strokeStyle='#374151'; c.lineWidth=1.5; c.beginPath(); c.roundRect(hx,hy,hw,hh,5); c.stroke();
@@ -578,8 +599,8 @@ function drawTL(c,x,y,light,pos) {
   else{c.fillRect(x-4,y-42,8,42);c.fillRect(x-hw/2-8,y-6,hw/2+8,6);drawHousing(c,x-4-hw,y-hh,hw,hh,light);}
 }
 
-function drawScene(c, light) {
-  const bW=CX-ROAD_HALF-SIDEWALK, bH=CY-ROAD_HALF-SIDEWALK;
+function drawScene(c,light) {
+  const bW=CX-ROAD_HALF-SIDEWALK,bH=CY-ROAD_HALF-SIDEWALK;
   c.fillStyle='#111827';
   c.fillRect(0,0,bW,bH); c.fillRect(CX+ROAD_HALF+SIDEWALK,0,W-CX-ROAD_HALF-SIDEWALK,bH);
   c.fillRect(0,CY+ROAD_HALF+SIDEWALK,bW,H-CY-ROAD_HALF-SIDEWALK);
@@ -611,27 +632,23 @@ function drawScene(c, light) {
   c.stroke();
   drawArrow(c,CX-LANE_W*.5,CY-ROAD_HALF-60,'south');
   drawArrow(c,CX+LANE_W*.5,CY+ROAD_HALF+60,'north');
-  // Pass null when not connected → all lights dark
   drawTL(c,CX-ROAD_HALF-8,CY-ROAD_HALF,light,'NW');
   drawTL(c,CX+ROAD_HALF+8,CY+ROAD_HALF,light,'SE');
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════
    ANIMATION LOOP
-   currentLight===null → cars frozen, lights all dark
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════ */
 const southCars=[new Car('south',0),new Car('south',1),new Car('south',2)];
 const northCars=[new Car('north',0),new Car('north',1),new Car('north',2)];
 
 (function loop() {
   ctx.clearRect(0,0,W,H);
-  drawScene(ctx, currentLight);   // null = all lights dark
+  drawScene(ctx, currentLight);   // null = all lights dark, no glow
 
   if (currentLight !== null) {
-    // Only move cars once Firebase has sent a real state
     const south=[...southCars].sort((a,b)=>b.y-a.y);
     south.forEach((car,i)=>car.update(i>0?south[i-1].y-CAR_H/2:null));
-
     const north=[...northCars].sort((a,b)=>a.y-b.y);
     north.forEach((car,i)=>car.update(i>0?north[i-1].y+CAR_H/2:null));
   }
