@@ -56,48 +56,22 @@
     #splash p  { color:#6b7280; font-size:1rem; text-align:center; max-width:400px; line-height:1.8; }
     #splash p strong { color:#e5e7eb; }
 
-    .steps {
-      display:flex; flex-direction:column; gap:8px;
-      width:100%; max-width:380px;
-    }
-    .step {
-      display:flex; align-items:center; gap:12px;
-      background:#0d1117; border:1px solid #1f2937;
-      border-radius:10px; padding:10px 14px;
-      font-size:0.9rem; color:#9ca3af;
-      transition: border-color 0.3s, color 0.3s;
-    }
-    .step .num {
-      width:24px; height:24px; border-radius:50%;
-      background:#1f2937; color:#6b7280;
-      display:flex; align-items:center; justify-content:center;
-      font-size:0.75rem; font-weight:700; flex-shrink:0;
-      transition: background 0.3s, color 0.3s;
-    }
-    .step.done   { border-color:#22c55e44; color:#e5e7eb; }
-    .step.done .num  { background:#22c55e; color:#000; }
-    .step.active { border-color:#fbbf2444; color:#e5e7eb; }
-    .step.active .num { background:#fbbf24; color:#000; }
-
-    #start-btn {
-      margin-top:4px; padding:14px 48px;
-      background:#22c55e; color:#030712;
-      border:none; border-radius:10px;
-      font-family:'Rajdhani',sans-serif;
-      font-size:1.25rem; font-weight:700; letter-spacing:0.12em;
-      cursor:pointer; transition:background 0.2s, transform 0.1s;
-    }
-    #start-btn:hover  { background:#16a34a; }
-    #start-btn:active { transform:scale(0.97); }
-    #start-btn:disabled { background:#1f2937; color:#4b5563; cursor:not-allowed; }
-
     #splash-msg {
       font-family:'JetBrains Mono',monospace;
-      font-size:0.78rem; color:#4b5563;
+      font-size:0.82rem; color:#4b5563;
       min-height:1.5em; text-align:center; max-width:420px;
     }
     #splash-msg.ok  { color:#22c55e; }
     #splash-msg.err { color:#ef4444; }
+
+    .spinner {
+      width:40px; height:40px;
+      border:3px solid #1f2937;
+      border-top-color:#22c55e;
+      border-radius:50%;
+      animation:spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
 
     /* CONTENT */
     .content {
@@ -206,15 +180,9 @@
 <div id="splash">
   <div style="font-size:3rem">🚦</div>
   <h1>TrafficSim</h1>
-
-  <div class="steps">
-    <div class="step" id="step1"><div class="num">1</div> Plug in your ESP32 and wait for its yellow LED to blink</div>
-    <div class="step" id="step2"><div class="num">2</div> Press Begin — webpage connects to Firebase</div>
-    <div class="step" id="step3"><div class="num">3</div> ESP32 detects the signal and starts the light cycle</div>
-  </div>
-
-  <button id="start-btn" onclick="beginSimulation()">▶ &nbsp;BEGIN SIMULATION</button>
-  <div id="splash-msg">Waiting — plug in ESP32 first, then press Begin.</div>
+  <p>Connecting to Firebase…<br/><strong>Make sure your ESP32 is plugged in and running.</strong></p>
+  <div class="spinner"></div>
+  <div id="splash-msg">Initializing…</div>
 </div>
 
 <!-- HEADER -->
@@ -223,7 +191,7 @@
   <span class="header-title">ESP32 Traffic Light Monitor</span>
   <span class="badge waiting" id="badge">
     <span class="pulse-dot"></span>
-    <span id="badge-txt">NOT STARTED</span>
+    <span id="badge-txt">CONNECTING…</span>
   </span>
 </header>
 
@@ -275,7 +243,7 @@
   </div>
 </div>
 
-<div id="debug-bar"><span class="ts">--:--:--</span> Press Begin Simulation to start.</div>
+<div id="debug-bar"><span class="ts">--:--:--</span> Waiting for ESP32…</div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
@@ -308,8 +276,6 @@ const ctx    = canvas.getContext('2d');
 
 /* ══════════════════════════════════════════
    STATE
-   currentLight = null  → not started yet
-                          cars frozen, lights dark, no countdown
 ══════════════════════════════════════════ */
 let currentLight = null;
 let logEntries   = [];
@@ -340,19 +306,12 @@ function setSplashMsg(msg, cls='') {
 }
 
 function setBadge(cls, txt) {
-  document.getElementById('badge').className   = 'badge ' + cls;
+  document.getElementById('badge').className      = 'badge ' + cls;
   document.getElementById('badge-txt').textContent = txt;
 }
 
-function setStep(n, state) {   // state: 'done' | 'active' | ''
-  const el = document.getElementById('step' + n);
-  el.className = 'step ' + state;
-}
-
 /* ══════════════════════════════════════════
-   COUNTDOWN — only called from applyLight()
-   which is only called when Firebase pushes
-   real data AFTER the ready flag is set
+   COUNTDOWN
 ══════════════════════════════════════════ */
 function startCountdown(duration) {
   clearInterval(cdInterval);
@@ -376,8 +335,6 @@ function tickRing() {
 
 /* ══════════════════════════════════════════
    APPLY LIGHT
-   Only called when Firebase pushes a valid
-   state — never on page load
 ══════════════════════════════════════════ */
 function applyLight(rawState, duration, updatedAt) {
   const light = String(rawState||'').toLowerCase().trim();
@@ -401,7 +358,7 @@ function applyLight(rawState, duration, updatedAt) {
     renderLog();
   }
 
-  currentLight = light;       // set BEFORE startCountdown so ring colour is right
+  currentLight = light;
   startCountdown(duration);
   setBadge('live', 'LIVE');
 }
@@ -421,77 +378,51 @@ function renderLog() {
 }
 
 /* ══════════════════════════════════════════
-   BEGIN SIMULATION — the Start button
-   
-   Steps:
-   1. Connect to Firebase
-   2. Start listening to /traffic_light/status
-   3. Write ready=true  → unblocks the ESP32
-   4. ESP32 starts its cycle and pushes the
-      first state → applyLight() fires
+   AUTO-START ON PAGE LOAD
 ══════════════════════════════════════════ */
-function beginSimulation() {
-  const btn = document.getElementById('start-btn');
-  btn.disabled    = true;
-  btn.textContent = '⏳  Connecting…';
+window.addEventListener('load', () => {
   setSplashMsg('Connecting to Firebase…');
   setBadge('connecting', 'CONNECTING…');
-  setStep(1, 'done');
-  setStep(2, 'active');
   dbg('Connecting to Firebase…');
 
   try {
     if (!firebase.apps.length) firebase.initializeApp(FB_CFG);
     const db        = firebase.database();
     const statusRef = db.ref('traffic_light/status');
-    const readyRef  = db.ref('traffic_light/ready');
 
-    // Step 1: attach listener BEFORE writing ready=true
-    // so we don't miss the first push from the ESP32
     statusRef.on('value',
       (snap) => {
         const data = snap.val();
         dbg('Status snapshot: ' + JSON.stringify(data));
 
-        if (data && LINFO[String(data.north_south||'').toLowerCase().trim()]) {
-          // Real data arrived from ESP32 — hide splash and go live
+        if (data && LINFO[String(data.north_south || '').toLowerCase().trim()]) {
+          // ESP32 is live — hide splash and show data
           document.getElementById('splash').style.display = 'none';
-          setStep(3, 'done');
           applyLight(data.north_south, data.duration, data.updated_at);
         } else {
-          // No valid data yet — ESP32 is still waiting or booting
-          dbg('Waiting for ESP32 to start its cycle…');
-          setBadge('connecting', 'WAITING FOR ESP32…');
+          // Firebase connected but ESP32 not started yet
           setSplashMsg('✅ Firebase connected — waiting for ESP32 to start…', 'ok');
-          setStep(2, 'done');
-          setStep(3, 'active');
+          setBadge('connecting', 'WAITING FOR ESP32…');
+          dbg('Firebase connected — waiting for ESP32…');
         }
       },
       (err) => {
         dbg(`Firebase error: ${err.code} — ${err.message}`, true);
         setBadge('offline', 'ERROR');
-        btn.disabled    = false;
-        btn.textContent = '▶  RETRY';
         if (err.code === 'PERMISSION_DENIED') {
-          setSplashMsg('🔒 Permission Denied — set Firebase Rules .read and .write to true, then retry.', 'err');
+          setSplashMsg('🔒 Permission Denied — set Firebase Rules .read/.write to true.', 'err');
         } else {
-          setSplashMsg('Error: ' + err.message, 'err');
+          setSplashMsg('❌ ' + err.message, 'err');
         }
       }
     );
 
-    // Step 2: write ready=true — this unblocks the ESP32's waitForWebpageReady()
-    readyRef.set(true)
-      .then(() => dbg('Ready flag set → ESP32 will now start its cycle'))
-      .catch(e  => dbg('Could not write ready flag: ' + e.message, true));
-
   } catch(e) {
     dbg('Init error: ' + e.message, true);
-    setSplashMsg('Error: ' + e.message, 'err');
-    btn.disabled    = false;
-    btn.textContent = '▶  RETRY';
+    setSplashMsg('❌ ' + e.message, 'err');
+    setBadge('offline', 'ERROR');
   }
-}
+});
 
 /* ══════════════════════════════════════════
    CAR CLASS
@@ -507,7 +438,7 @@ class Car {
   }
 
   update(frontEdgeY) {
-    if (currentLight === null) return;   // frozen until Firebase is live
+    if (currentLight === null) return;
     const stop = currentLight==='red' || currentLight==='yellow';
 
     if (this.dir === 'south') {
@@ -644,7 +575,7 @@ const northCars=[new Car('north',0),new Car('north',1),new Car('north',2)];
 
 (function loop() {
   ctx.clearRect(0,0,W,H);
-  drawScene(ctx, currentLight);   // null = all lights dark, no glow
+  drawScene(ctx, currentLight);
 
   if (currentLight !== null) {
     const south=[...southCars].sort((a,b)=>b.y-a.y);
